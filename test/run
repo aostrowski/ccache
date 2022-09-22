@@ -621,6 +621,7 @@ REAL_COMPILER_BIN=$(find_compiler $COMPILER_BIN)
 REAL_COMPILER="$REAL_COMPILER_BIN$COMPILER_ARGS"
 REAL_NVCC=$(find_compiler nvcc)
 REAL_IWYU=$(find_compiler iwyu)
+REAL_TIDY=$(find_compiler clang-tidy)
 
 if [ "$REAL_COMPILER_BIN" = "$COMPILER_BIN" ]; then
     echo "Compiler:         $CC"
@@ -634,13 +635,19 @@ if [ -n "$REAL_NVCC" ]; then
 else
     echo "CUDA compiler:    not available"
 fi
-echo
 
 if [ -n "$REAL_IWYU" ]; then
     echo "IWYU:    $($REAL_IWYU --version) ($REAL_IWYU)"
 else
     echo "IWYU:    not available"
 fi
+
+if [ -n "$REAL_TIDY" ]; then
+    echo "clang-tidy:    $($REAL_TIDY --version | head -n 2 | tail -n 1) ($REAL_TIDY)"
+else
+    echo "clang-tidy:    not available"
+fi
+
 echo
 
 cd $TESTDIR || exit 1
