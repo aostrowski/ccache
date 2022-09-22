@@ -206,6 +206,12 @@ expect_missing() {
     fi
 }
 
+expect_equal() {
+    if [[ x"$1" != x"$2" ]]; then
+        test_failed_internal "\"$1\" and \"$2\" differ"
+    fi
+}
+
 expect_equal_content() {
     if [ ! -e "$1" ]; then
         test_failed_internal "expect_equal_content: $1 missing"

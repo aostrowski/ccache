@@ -71,7 +71,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <iostream>
 #include <limits>
 #include <memory>
 using core::Statistic;
@@ -249,7 +248,6 @@ guess_compiler(std::string_view path)
   } else if (name == "cl") {
     return CompilerType::msvc;
   } else if (name == "iwyu" || name == "include-what-you-use") {
-    std::cout << "hurra" << std::endl;
     return CompilerType::iwyu;
   } else {
     return CompilerType::other;
