@@ -39,6 +39,7 @@ enum class CompilerType {
   icl,
   msvc,
   nvcc,
+  iwyu,
   other
 };
 

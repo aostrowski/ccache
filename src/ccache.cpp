@@ -71,9 +71,9 @@
 
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 #include <limits>
 #include <memory>
-
 using core::Statistic;
 
 // This is a string that identifies the current "version" of the hash sum
@@ -248,6 +248,9 @@ guess_compiler(std::string_view path)
     return CompilerType::icl;
   } else if (name == "cl") {
     return CompilerType::msvc;
+  } else if (name == "iwyu" || name == "include-what-you-use") {
+    std::cout << "hurra" << std::endl;
+    return CompilerType::iwyu;
   } else {
     return CompilerType::other;
   }
@@ -959,7 +962,7 @@ to_cache(Context& ctx,
 {
   if (ctx.config.is_compiler_group_msvc()) {
     args.push_back(fmt::format("-Fo{}", ctx.args_info.output_obj));
-  } else {
+  } else if (ctx.config.compiler_type() != CompilerType::iwyu) {
     args.push_back("-o");
     args.push_back(ctx.args_info.output_obj);
   }
@@ -1004,7 +1007,7 @@ to_cache(Context& ctx,
   nonstd::expected<DoExecuteResult, Failure> result;
   if (!ctx.config.depend_mode()) {
     result = do_execute(ctx, args);
-    args.pop_back(3);
+    //    args.pop_back(3); TODO
   } else {
     // Use the original arguments (including dependency options) in depend
     // mode.
@@ -1031,7 +1034,8 @@ to_cache(Context& ctx,
   result->stdout_data =
     rewrite_stdout_from_compiler(ctx, std::move(result->stdout_data));
 
-  if (result->exit_status != 0) {
+  if (result->exit_status != 0
+      && ctx.config.compiler_type() != CompilerType::iwyu) {
     LOG("Compiler gave exit status {}", result->exit_status);
 
     // We can output stderr immediately instead of rerunning the compiler.
@@ -1061,7 +1065,8 @@ to_cache(Context& ctx,
   }
 
   Stat obj_stat;
-  if (!ctx.args_info.expect_output_obj) {
+  if (!ctx.args_info.expect_output_obj
+      || ctx.config.compiler_type() == CompilerType::iwyu) {
     // Don't probe for object file when we don't expect one since we otherwise
     // will be fooled by an already existing object file.
     LOG_RAW("Compiler not expected to produce an object file");
@@ -1099,7 +1104,8 @@ get_result_key_from_cpp(Context& ctx, Args& args, Hash& hash)
   std::string preprocessed_path;
   std::string cpp_stderr_data;
 
-  if (ctx.args_info.direct_i_file) {
+  if (ctx.args_info.direct_i_file
+      || ctx.config.compiler_type() == CompilerType::iwyu) {
     // We are compiling a .i or .ii file - that means we can skip the cpp stage
     // and directly form the correct i_tmpfile.
     preprocessed_path = ctx.args_info.input_file;

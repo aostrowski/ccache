@@ -1269,7 +1269,8 @@ process_args(Context& ctx)
 
   // -fsyntax-only/-Zs does not need -c
   if (!state.found_c_opt && !state.found_dc_opt && !state.found_S_opt
-      && !state.found_syntax_only) {
+      && !state.found_syntax_only
+      && config.compiler_type() != CompilerType::iwyu) {
     if (args_info.output_is_precompiled_header) {
       state.common_args.push_back("-c");
     } else {
