@@ -208,7 +208,7 @@ expect_missing() {
 
 expect_equal() {
     if [[ x"$1" != x"$2" ]]; then
-        test_failed_internal "\"$1\" and \"$2\" differ"
+        test_failed_internal "Strings differ: \"$1\" and \"$2\" differ"
     fi
 }
 
