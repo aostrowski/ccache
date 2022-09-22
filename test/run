@@ -637,9 +637,9 @@ else
 fi
 
 if [ -n "$REAL_IWYU" ]; then
-    echo "IWYU:    $($REAL_IWYU --version) ($REAL_IWYU)"
+    echo "IWYU:             $($REAL_IWYU --version) ($REAL_IWYU)"
 else
-    echo "IWYU:    not available"
+    echo "IWYU:             not available"
 fi
 
 if [ -n "$REAL_TIDY" ]; then
