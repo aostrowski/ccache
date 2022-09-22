@@ -236,6 +236,8 @@ guess_compiler(std::string_view path)
     Util::to_lowercase(Util::remove_extension(Util::base_name(compiler_path)));
   if (name.find("clang-cl") != std::string_view::npos) {
     return CompilerType::clang_cl;
+  } else if (name.find("clang-tidy") != std::string_view::npos) {
+    return CompilerType::clang_tidy;
   } else if (name.find("clang") != std::string_view::npos) {
     return CompilerType::clang;
   } else if (name.find("gcc") != std::string_view::npos
@@ -247,7 +249,8 @@ guess_compiler(std::string_view path)
     return CompilerType::icl;
   } else if (name == "cl") {
     return CompilerType::msvc;
-  } else if (name == "iwyu" || name == "include-what-you-use") {
+  } else if (name.find("iwyu") != std::string_view::npos
+             || name.find("include-what-you-use") != std::string_view::npos) {
     return CompilerType::iwyu;
   } else {
     return CompilerType::other;
@@ -960,7 +963,7 @@ to_cache(Context& ctx,
 {
   if (ctx.config.is_compiler_group_msvc()) {
     args.push_back(fmt::format("-Fo{}", ctx.args_info.output_obj));
-  } else if (ctx.config.compiler_type() != CompilerType::iwyu) {
+  } else if (!ctx.config.is_compiler_group_linter()) {
     args.push_back("-o");
     args.push_back(ctx.args_info.output_obj);
   }
@@ -977,7 +980,8 @@ to_cache(Context& ctx,
     args.push_back(ctx.args_info.output_dia);
   }
 
-  if (ctx.args_info.seen_double_dash) {
+  if (ctx.args_info.seen_double_dash
+      && !ctx.config.is_compiler_group_linter()) {
     args.push_back("--");
   }
 
@@ -985,6 +989,10 @@ to_cache(Context& ctx,
     args.push_back(ctx.args_info.input_file);
   } else {
     args.push_back(ctx.i_tmpfile);
+  }
+
+  if (ctx.args_info.seen_double_dash && ctx.config.is_compiler_group_linter()) {
+    args.push_back("--");
   }
 
   if (ctx.args_info.seen_split_dwarf) {
@@ -1005,7 +1013,9 @@ to_cache(Context& ctx,
   nonstd::expected<DoExecuteResult, Failure> result;
   if (!ctx.config.depend_mode()) {
     result = do_execute(ctx, args);
-    //    args.pop_back(3); TODO
+    if (!ctx.config.is_compiler_group_linter()) {
+      args.pop_back(3);
+    }
   } else {
     // Use the original arguments (including dependency options) in depend
     // mode.
@@ -1032,8 +1042,8 @@ to_cache(Context& ctx,
   result->stdout_data =
     rewrite_stdout_from_compiler(ctx, std::move(result->stdout_data));
 
-  if (result->exit_status != 0
-      && ctx.config.compiler_type() != CompilerType::iwyu) {
+  // TODO handle true linter errors
+  if (result->exit_status != 0 && !ctx.config.is_compiler_group_linter()) {
     LOG("Compiler gave exit status {}", result->exit_status);
 
     // We can output stderr immediately instead of rerunning the compiler.
@@ -1063,8 +1073,7 @@ to_cache(Context& ctx,
   }
 
   Stat obj_stat;
-  if (!ctx.args_info.expect_output_obj
-      || ctx.config.compiler_type() == CompilerType::iwyu) {
+  if (!ctx.args_info.expect_output_obj) {
     // Don't probe for object file when we don't expect one since we otherwise
     // will be fooled by an already existing object file.
     LOG_RAW("Compiler not expected to produce an object file");
@@ -1102,8 +1111,7 @@ get_result_key_from_cpp(Context& ctx, Args& args, Hash& hash)
   std::string preprocessed_path;
   std::string cpp_stderr_data;
 
-  if (ctx.args_info.direct_i_file
-      || ctx.config.compiler_type() == CompilerType::iwyu) {
+  if (ctx.args_info.direct_i_file || ctx.config.is_compiler_group_linter()) {
     // We are compiling a .i or .ii file - that means we can skip the cpp stage
     // and directly form the correct i_tmpfile.
     preprocessed_path = ctx.args_info.input_file;

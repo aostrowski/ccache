@@ -13,13 +13,16 @@ EOF
 tidy_tests() {
     # -------------------------------------------------------------------------
     TEST "Positive case - no diagnostics"
+    echo dupa $RAW_STDOUT
 
-    tidy_opts_cpp="-checks=*"
+    tidy_opts_cpp="-checks=*,-modernize-use-trailing-return-type"
     ccache_tidy_cpp="$CCACHE $REAL_TIDY $tidy_opts_cpp --"
 
 
     # Run TIDY without CCache
     capture_output RAW_STDOUT RAW_STDERR $REAL_TIDY $tidy_opts_cpp test_tidy.cpp
+    echo dupa $RAW_STDOUT
+
     expect_equal "" "$RAW_STDOUT"
 
     # First TIDY run
@@ -41,7 +44,7 @@ tidy_tests() {
     # -------------------------------------------------------------------------
     TEST "Negative case - some diagnostics"
 
-    tidy_opts_cpp="-checks=*,-modernize-use-trailing-return-type"
+    tidy_opts_cpp="-checks=*"
     ccache_tidy_cpp="$CCACHE $REAL_TIDY $tidy_opts_cpp --"
 
 

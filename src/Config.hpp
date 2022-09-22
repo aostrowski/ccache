@@ -40,6 +40,7 @@ enum class CompilerType {
   msvc,
   nvcc,
   iwyu,
+  clang_tidy,
   other
 };
 
@@ -100,6 +101,8 @@ public:
 
   // Return true for MSVC (cl.exe), clang-cl, and icl.
   bool is_compiler_group_msvc() const;
+
+  bool is_compiler_group_linter() const;
 
   std::string default_temporary_dir() const;
 
@@ -262,6 +265,13 @@ Config::is_compiler_group_msvc() const
   return m_compiler_type == CompilerType::msvc
          || m_compiler_type == CompilerType::clang_cl
          || m_compiler_type == CompilerType::icl;
+}
+
+inline bool
+Config::is_compiler_group_linter() const
+{
+  return m_compiler_type == CompilerType::iwyu
+         || m_compiler_type == CompilerType::clang_tidy;
 }
 
 inline bool

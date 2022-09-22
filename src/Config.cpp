@@ -254,6 +254,8 @@ parse_compiler_type(const std::string& value)
     return CompilerType::nvcc;
   } else if (value == "iwyu") {
     return CompilerType::iwyu;
+  } else if (value == "clang-tidy") {
+    return CompilerType::clang_tidy;
   } else if (value == "other") {
     return CompilerType::other;
   } else {
@@ -461,6 +463,8 @@ compiler_type_to_string(CompilerType compiler_type)
     return "auto";
   case CompilerType::clang_cl:
     return "clang-cl";
+  case CompilerType::clang_tidy:
+    return "clang-tidy";
 
     CASE(clang);
     CASE(gcc);

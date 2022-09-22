@@ -1123,6 +1123,7 @@ process_args(Context& ctx)
 
   ArgsInfo& args_info = ctx.args_info;
   Config& config = ctx.config;
+  args_info.expect_output_obj = !config.is_compiler_group_linter();
 
   // args is a copy of the original arguments given to the compiler but with
   // arguments from @file and similar constructs expanded. It's only used as a
@@ -1269,8 +1270,7 @@ process_args(Context& ctx)
 
   // -fsyntax-only/-Zs does not need -c
   if (!state.found_c_opt && !state.found_dc_opt && !state.found_S_opt
-      && !state.found_syntax_only
-      && config.compiler_type() != CompilerType::iwyu) {
+      && !state.found_syntax_only && !config.is_compiler_group_linter()) {
     if (args_info.output_is_precompiled_header) {
       state.common_args.push_back("-c");
     } else {
