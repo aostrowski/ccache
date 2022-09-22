@@ -643,9 +643,9 @@ else
 fi
 
 if [ -n "$REAL_TIDY" ]; then
-    echo "clang-tidy:    $($REAL_TIDY --version | head -n 2 | tail -n 1) ($REAL_TIDY)"
+    echo "clang-tidy:     $($REAL_TIDY --version | head -n 2 | tail -n 1) ($REAL_TIDY)"
 else
-    echo "clang-tidy:    not available"
+    echo "clang-tidy:     not available"
 fi
 
 echo
