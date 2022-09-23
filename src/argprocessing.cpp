@@ -1029,6 +1029,8 @@ process_option_arg(const Context& ctx,
 
   if (args[i] == "--") {
     args_info.seen_double_dash = true;
+    if (config.is_compiler_group_linter())
+      state.common_args.push_back(args[i]);
     return Statistic::none;
   }
 
@@ -1082,6 +1084,11 @@ process_arg(const Context& ctx,
     }
   }
 
+  if (config.is_compiler_group_linter() && args_info.seen_double_dash) {
+    state.common_args.push_back(args[i]);
+    return Statistic::none;
+  }
+
   if (!args_info.input_file.empty()) {
     if (supported_source_extension(args[i])) {
       LOG("Multiple input files: {} and {}", args_info.input_file, args[i]);
@@ -1104,6 +1111,10 @@ process_arg(const Context& ctx,
   args_info.input_file = Util::make_relative_path(ctx, args[i]);
   args_info.normalized_input_file =
     Util::normalize_concrete_absolute_path(args_info.input_file);
+
+  if (config.is_compiler_group_linter()) {
+    state.common_args.push_back(args[i]);
+  }
 
   return Statistic::none;
 }

@@ -985,14 +985,12 @@ to_cache(Context& ctx,
     args.push_back("--");
   }
 
-  if (ctx.config.run_second_cpp()) {
-    args.push_back(ctx.args_info.input_file);
-  } else {
-    args.push_back(ctx.i_tmpfile);
-  }
-
-  if (ctx.args_info.seen_double_dash && ctx.config.is_compiler_group_linter()) {
-    args.push_back("--");
+  if (!ctx.config.is_compiler_group_linter()) {
+    if (ctx.config.run_second_cpp()) {
+      args.push_back(ctx.args_info.input_file);
+    } else {
+      args.push_back(ctx.i_tmpfile);
+    }
   }
 
   if (ctx.args_info.seen_split_dwarf) {
